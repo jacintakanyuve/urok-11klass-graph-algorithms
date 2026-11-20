@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Информатика 11 класс: Решение алгоритмических задач анализа графов</title>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --surface: #ffffff;
+      --surface-soft: #f8fafc;
+      --primary: #1d4ed8;
+      --primary-dark: #1e3a8a;
+      --primary-light: #dbeafe;
+      --accent: #0f766e;
+      --accent-light: #ccfbf1;
+      --success: #059669;
+      --success-light: #d1fae5;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --border: #cbd5e1;
+      --radius: 16px;
+      --shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 56px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+    }
+
+    .topbar-inner {
+      max-width: 920px;
+      margin: 0 auto;
+    }
+
+    .topbar-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    .timer-box {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 999px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.35s ease;
+    }
+
+    .nav-pills {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-top: 10px;
+      scrollbar-width: none;
+    }
+
+    .nav-pills::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-pill {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .nav-pill.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .nav-pill.done {
+      border-color: var(--success);
+      color: var(--success);
+      background: var(--success-light);
+    }
+
+    .nav-pill.active.done {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .container {
+      max-width: 920px;
+      margin: 20px auto 0;
+      padding: 0 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(203, 213, 225, 0.75);
+    }
+
+    .module {
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .module.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      line-height: 1.25;
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 1.28rem;
+      margin-bottom: 12px;
+      color: var(--primary-dark);
+    }
+
+    h3 {
+      font-size: 1.06rem;
+      margin: 16px 0 8px;
+    }
+
+    p {
+      margin-bottom: 12px;
+    }
+
+    ul, ol {
+      margin: 8px 0 14px 20px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    .time-tag {
+      display: inline-block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-light);
+      padding: 3px 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .callout {
+      background: var(--surface-soft);
+      border-left: 4px solid var(--primary);
+      padding: 14px 16px;
+      border-radius: 0 12px 12px 0;
+      margin: 14px 0;
+    }
+
+    .callout.warn {
+      border-left-color: var(--warning);
+      background: var(--warning-light);
+    }
+
+    .callout.success {
+      border-left-color: var(--success);
+      background: var(--success-light);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 14px;
+      margin: 14px 0;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .info-box {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+
+    .info-box strong {
+      display: block;
+      font-size: 1.02rem;
+      margin-bottom: 6px;
+      color: var(--primary-dark);
+    }
+
+    .formula-box {
+      background: #0f172a;
+      color: #38bdf8;
+      font-family: "Courier New", Courier, monospace;
+      font-weight: 700;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin: 12px 0;
+      font-size: 0.95rem;
+      text-align: center;
+      line-height: 1.65;
+    }
+
+    .code-block {
+      background: #0f172a;
+      color: #e2e8f0;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.86rem;
+      line-height: 1.5;
+      padding: 14px 16px;
+      border-radius: 12px;
+      overflow-x: auto;
+      margin: 12px 0;
+      white-space: pre;
+    }
+
+    .interactive-zone {
+      background: #f8fafc;
+      border: 2px dashed #93c5fd;
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-top: 18px;
+    }
+
+    .interactive-title {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--primary-dark);
+      margin-bottom: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+
+    .btn-success {
+      background: var(--success);
+    }
+
+    .btn-success:hover {
+      background: #047857;
+    }
+
+    .btn-sm {
+      padding: 7px 14px;
+      font-size: 0.86rem;
+      border-radius: 8px;
+    }
+
+    .nav-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .input-field {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+      margin: 8px 0 12px;
+    }
+
+    /* SVG сцены */
+    .svg-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin: 10px 0;
+      text-align: center;
+      overflow-x: auto;
+    }
+
+    .svg-box svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    /* Таблицы и матрицы */
+    table.data-table {
+      border-collapse: collapse;
+      margin: 0 auto;
+      background: var(--surface);
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.93rem;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    table.data-table th, table.data-table td {
+      border: 1px solid var(--border);
+      padding: 7px 8px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    table.data-table th {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    td.diag-cell {
+      background: #e2e8f0;
+      color: #94a3b8;
+    }
+
+    td.empty-cell {
+      color: #cbd5e1;
+    }
+
+    /* Поля ввода по вершинам */
+    .node-inputs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+      gap: 10px;
+      margin: 12px 0;
+    }
+
+    .node-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .node-card label {
+      display: block;
+      font-weight: 800;
+      color: var(--primary-dark);
+      margin-bottom: 6px;
+      font-size: 0.9rem;
+    }
+
+    .node-card input, .node-card select {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-align: center;
+      font-size: 0.98rem;
+      font-weight: 700;
+      background: #fff;
+    }
+
+    .node-card input.ok, .node-card select.ok {
+      border-color: var(--success);
+      background: var(--success-light);
+      color: #065f46;
+    }
+
+    .node-card input.bad, .node-card select.bad {
+      border-color: var(--danger);
+      background: var(--danger-light);
+      color: #991b1b;
+    }
+
+    /* Тест */
+    .quiz-q {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .quiz-opt {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 10px 14px;
+      margin-top: 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.93rem;
+      transition: all 0.15s;
+    }
+
+    .quiz-opt:hover {
+      border-color: var(--primary);
+    }
+
+    .quiz-opt.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      font-weight: 600;
+    }
+
+    .quiz-opt.correct {
+      border-color: var(--success);
+      background: var(--success-light);
+      color: #065f46;
+      font-weight: 700;
+    }
+
+    .quiz-opt.wrong {
+      border-color: var(--danger);
+      background: var(--danger-light);
+      color: #991b1b;
+    }
+
+    /* Сертификат */
+    .cert-box {
+      border: 3px solid var(--primary);
+      background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+      border-radius: 18px;
+      padding: 24px;
+      text-align: center;
+      margin-top: 18px;
+    }
+
+    .cert-grade {
+      display: inline-block;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--success);
+      background: var(--success-light);
+      padding: 8px 22px;
+      border-radius: 12px;
+      margin: 12px 0;
+    }
+
+    .feedback {
+      margin-top: 10px;
+      font-weight: 600;
+      font-size: 0.93rem;
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 16px; }
+      h1 { font-size: 1.32rem; }
+      h2 { font-size: 1.16rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-row">
+        <span class="badge">Информатика • 11 класс</span>
+        <span class="timer-box" id="timerDisplay">Время урока: 00:00 / 45:00</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressBar"></div>
+      </div>
+      <nav class="nav-pills" id="navPills">
+        <button class="nav-pill active" onclick="goToStep(0)">Старт</button>
+        <button class="nav-pill" onclick="goToStep(1)">1. Алгоритм Дейкстры</button>
+        <button class="nav-pill" onclick="goToStep(2)">2. Количество путей (DAG)</button>
+        <button class="nav-pill" onclick="goToStep(3)">3. Весовая матрица</button>
+        <button class="nav-pill" onclick="goToStep(4)">4. Итоговый контроль</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- ШАГ 0: ВВЕДЕНИЕ -->
+    <section class="module active" id="step-0">
+      <div class="card">
+        <span class="time-tag">Самостоятельный урок • 45 минут</span>
+        <h1>Решение алгоритмических задач, связанных с анализом графов (поиск кратчайшего пути, количество путей)</h1>
+        <p>Анализ графов — одна из центральных тем алгоритмики в 11 классе. На базе графовых моделей работают навигаторы, протоколы маршрутизации в интернете, планировщики задач и системы оптимизации логистики.</p>
+        <p>На этом уроке ты отработаешь <strong>алгоритм Дейкстры</strong> для поиска кратчайших путей, освоишь метод <strong>динамического программирования</strong> для подсчёта путей в направленных ациклических графах с комбинированными ограничениями, а также научишься дешифровать весовые матрицы.</p>
+
+        <div class="callout">
+          <strong>План работы на урок:</strong><br />
+          1. Проследить пошаговую релаксацию рёбер в симуляторе алгоритма Дейкстры и вычислить кратчайшие расстояния на контрольном графе.<br />
+          2. Решить задачу подсчёта количества путей с двойным условием (обязательная + исключённая вершина).<br />
+          3. Сопоставить весовую матрицу со схемой дорог, найти минимальный маршрут и пройти итоговый тест (8 вопросов).
+        </div>
+
+        <label for="studentNameInput"><strong>Введи фамилию, имя и класс перед началом:</strong></label>
+        <input type="text" id="studentNameInput" class="input-field" placeholder="Например: Соболев Арсений, 11-А" />
+
+        <div class="nav-footer">
+          <span></span>
+          <button class="btn" onclick="startLesson()">Начать урок →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ШАГ 1: ПОИСК КРАТЧАЙШЕГО ПУТИ (АЛГОРИТМ ДЕЙКСТРЫ) -->
+    <section class="module" id="step-1">
+      <div class="card">
+        <span class="time-tag">Модуль 1 • Рекомендуемое время: 12 минут</span>
+        <h2>1. Поиск кратчайшего пути во взвешенном графе (алгоритм Дейкстры)</h2>
+        <p>Пусть дан взвешенный граф без рёбер отрицательного веса. <strong>Алгоритм Дейкстры</strong> находит длины кратчайших путей от одной стартовой вершины <i>S</i> до <strong>всех остальных вершин</strong> графа.</p>
+
+        <div class="callout">
+          <strong>Пошаговая схема алгоритма Дейкстры:</strong><br />
+          1. Присвоим стартовой вершине метку <code>d[S] = 0</code>, всем остальным вершинам — <code>d[v] = ∞</code>. Все вершины отметим как непосещённые.<br />
+          2. Среди всех <em>непосещённых</em> вершин выберем вершину <i>u</i> с <strong>минимальной текущей меткой</strong> <code>d[u]</code>.<br />
+          3. Для каждого непосещённого соседа <i>v</i> выполним <strong>релаксацию ребра (u, v)</strong>:<br />
+          <span style="font-family: monospace; font-weight: 700;">if d[u] + w(u, v) &lt; d[v]: d[v] = d[u] + w(u, v)</span><br />
+          4. Отметим вершину <i>u</i> как посещённую (её метка <code>d[u]</code> стала окончательной) и повторим шаги 2–4.
+        </div>
+
+        <div class="interactive-zone">
+          <div class="interactive-title">Интерактивный демонстратор: Пошаговая работа алгоритма Дейкстры (от вершины S)</div>
+          <p style="font-size: 0.92rem;">Нажимай кнопку «Следующий шаг →», чтобы увидеть, как выбирается минимальная вершина и обновляются (релаксируются) метки соседей:</p>
+
+          <div class="svg-box" id="dijkstraDemoSvg"></div>
+          <div class="info-box" id="dijkstraStepDesc" style="margin-bottom: 10px;"></div>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-sm btn-secondary" onclick="stepDijkstra(-1)">← Назад</button>
+            <button class="btn btn-sm" onclick="stepDijkstra(1)">Следующий шаг →</button>
+            <button class="btn btn-sm btn-secondary" onclick="resetDijkstraDemo()">В начало</button>
+          </div>
+
+          <hr style="margin: 18px 0; border: none; border-top: 1px solid var(--border);" />
+
+          <div class="interactive-title">Практикум 1: Вычисли кратчайшие расстояния от вершины А</div>
+          <p style="font-size: 0.92rem;">Примени алгоритм Дейкстры к графу ниже и впиши длины кратчайших путей от стартовой вершины <strong>А</strong> до каждой из вершин <strong>Б, В, Г, Д, Е</strong>:</p>
+
+          <div class="svg-box" id="m1PracticeSvg"></div>
+
+          <div class="node-inputs-grid">
+            <div class="node-card">
+              <label>d(А → А)</label>
+              <input type="number" value="0" disabled style="background:#e2e8f0;" />
+            </div>
+            <div class="node-card">
+              <label for="d1-B">d(А → Б)</label>
+              <input type="number" id="d1-B" placeholder="?" />
+            </div>
+            <div class="node-card">
+              <label for="d1-V">d(А → В)</label>
+              <input type="number" id="d1-V" placeholder="?" />
+            </div>
+            <div class="node-card">
+              <label for="d1-G">d(А → Г)</label>
+              <input type="number" id="d1-G" placeholder="?" />
+            </div>
+            <div class="node-card">
+              <label for="d1-D">d(А → Д)</label>
+              <input type="number" id="d1-D" placeholder="?" />
+            </div>
+            <div class="node-card" style="border-color: var(--primary); background: var(--primary-light);">
+              <label for="d1-E">d(А → Е)</label>
+              <input type="number" id="d1-E" placeholder="?" />
+            </div>
+          </div>
+
+          <button class="btn btn-sm" onclick="checkM1Practice()">Проверить расстояния</button>
+          <div class="feedback" id="m1Feedback"></div>
+        </div>
+
+        <div class="nav-footer">
+          <button class="btn btn-secondary" onclick="goToStep(0)">← Назад</button>
+          <button class="btn" onclick="goToStep(2)">Дальше: Количество путей в DAG →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ШАГ 2: ВЫЧИСЛЕНИЕ КОЛИЧЕСТВА ПУТЕЙ В НАПРАВЛЕННОМ АЦИКЛИЧЕСКОМ ГРАФЕ -->
+    <section class="module" id="step-2">
+      <div class="card">
+        <span class="time-tag">Модуль 2 • Рекомендуемое время: 12 минут</span>
+        <h2>2. Количество путей в направленном ациклическом графе (DAG)</h2>
+        <p>Для подсчёта числа различных маршрутов в ориентированном ациклическом графе используют метод <strong>динамического программирования</strong>: количество путей до вершины <i>X</i> равно сумме количества путей до всех вершин, из которых дуги <strong>входят</strong> в <i>X</i>.</p>
+
+        <div class="callout warn">
+          <strong>Решение задач с двойным ограничением (формат ЕГЭ №13):</strong><br />
+          Если требуется найти количество путей из <i>S</i> в <i>T</i>, <strong>обязательно проходящих через вершину A</strong> и <strong>НЕ проходящих через вершину B</strong>:<br />
+          1. Присвойте <code>N(B) = 0</code> (вычеркните запрещённую вершину B и все связанные с ней дуги).<br />
+          2. Удалите все дуги, которые позволяют <em>обойти</em> обязательную вершину A стороной (или разбейте задачу на произведение двух независимых этапов: <code>N(S → A) × N(A → T)</code> при условии <code>N(B) = 0</code>).
+        </div>
+
+        <div class="interactive-zone">
+          <div class="interactive-title">Практикум 2: Подсчитай количество путей из А в З (через В, избегая Е)</div>
+          <p style="font-size: 0.92rem;">Найди количество различных путей из города <strong>А</strong> в город <strong>З</strong>, которые <strong>обязательно проходят через город В</strong> и <strong>НЕ проходят через город Е</strong>. На схеме пунктиром уже отмечены дуги, нарушающие эти условия:</p>
+
+          <div class="svg-box" id="m2DagSvg"></div>
+
+          <div class="node-inputs-grid">
+            <div class="node-card">
+              <label>N(А)</label>
+              <input type="number" value="1" disabled style="background:#e2e8f0;" />
+            </div>
+            <div class="node-card">
+              <label for="n2-B">N(Б)</label>
+              <input type="number" id="n2-B" placeholder="?" />
+            </div>
+            <div class="node-card">
+              <label for="n2-G">N(Г)</label>
+              <input type="number" id="n2-G" placeholder="?" />
+            </div>
+            <div class="node-card" style="border-color: var(--accent);">
+              <label for="n2-V">N(В) [обяз.]</label>
+              <input type="number" id="n2-V" placeholder="?" />
+            </div>
+            <div class="node-card">
+              <label>N(Е) [запр.]</label>
+              <input type="number" value="0" disabled style="background:#fee2e2; color:#991b1b;" />
+            </div>
+            <div class="node-card">
+              <label for="n2-D">N(Д)</label>
+              <input type="number" id="n2-D" placeholder="?" />
+            </div>
+            <div class="node-card">
+              <label for="n2-J">N(Ж)</label>
+              <input type="number" id="n2-J" placeholder="?" />
+            </div>
+            <div class="node-card" style="border-color: var(--primary); background: var(--primary-light);">
+              <label for="n2-Z">N(З) — Ответ</label>
+              <input type="number" id="n2-Z" placeholder="?" />
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn btn-sm" onclick="checkM2Dag()">Проверить вычисления</button>
+            <button class="btn btn-sm btn-secondary" onclick="toggleM2Hint()">Показать подсказку</button>
+          </div>
+          <div id="m2HintBox" class="callout warn" style="display: none; font-size: 0.9rem;">
+            <strong>Разбор по вершинам:</strong><br />
+            • <code>N(Б) = N(А) = 1</code>; &nbsp;<code>N(Г) = N(А) = 1</code>.<br />
+            • <code>N(В) = N(А) + N(Б) + N(Г) = 1 + 1 + 1 = 3</code>.<br />
+            • Стрелка <code>Б → Д</code> отброшена (иначе путь обойдёт В), поэтому <code>N(Д) = N(В) = 3</code>.<br />
+            • Вершина Е запрещена (<code>N(Е) = 0</code>), поэтому <code>N(Ж) = N(В) + N(Д) = 3 + 3 = 6</code>.<br />
+            • <code>N(З) = N(Д) + N(Ж) = 3 + 6 = 9</code>.
+          </div>
+          <div class="feedback" id="m2Feedback"></div>
+        </div>
+
+        <div class="nav-footer">
+          <button class="btn btn-secondary" onclick="goToStep(1)">← Назад</button>
+          <button class="btn" onclick="goToStep(3)">Дальше: Весовая матрица и код →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ШАГ 3: ВЕСОВАЯ МАТРИЦА И ПРОГРАММНОЕ ПРЕДСТАВЛЕНИЕ -->
+    <section class="module" id="step-3">
+      <div class="card">
+        <span class="time-tag">Модуль 3 • Рекомендуемое время: 13 минут</span>
+        <h2>3. Дешифровка весовой матрицы и представление графов в Python</h2>
+        <p>При решении задач на сопоставление таблицы (весовой матрицы) и графа сначала выписывают <strong>степени всех вершин</strong> на схеме и количество заполненных ячеек в каждой строке таблицы, а затем анализируют степени соседних вершин.</p>
+
+        <div class="interactive-zone">
+          <div class="interactive-title">Практикум 3 (формат ЕГЭ №1): Сопоставь пункты П1–П6 и найди кратчайший путь А → Е</div>
+          <p style="font-size: 0.92rem;">На рисунке справа изображена схема дорог между пунктами <strong>А, Б, В, Г, Д, Е</strong>, а в таблице слева приведены длины этих дорог (нумерация <strong>П1–П6</strong> не совпадает с буквами). Определи соответствие пунктов и длину кратчайшего пути из <strong>А в Е</strong>:</p>
+
+          <div class="grid-2" style="align-items: center;">
+            <div>
+              <table class="data-table">
+                <tr><th></th><th>П1</th><th>П2</th><th>П3</th><th>П4</th><th>П5</th><th>П6</th></tr>
+                <tr><th>П1</th><td class="diag-cell">—</td><td class="empty-cell">·</td><td>4</td><td class="empty-cell">·</td><td>5</td><td class="empty-cell">·</td></tr>
+                <tr><th>П2</th><td class="empty-cell">·</td><td class="diag-cell">—</td><td>9</td><td class="empty-cell">·</td><td>3</td><td>8</td></tr>
+                <tr><th>П3</th><td>4</td><td>9</td><td class="diag-cell">—</td><td>7</td><td class="empty-cell">·</td><td class="empty-cell">·</td></tr>
+                <tr><th>П4</th><td class="empty-cell">·</td><td class="empty-cell">·</td><td>7</td><td class="diag-cell">—</td><td class="empty-cell">·</td><td class="empty-cell">·</td></tr>
+                <tr><th>П5</th><td>5</td><td>3</td><td class="empty-cell">·</td><td class="empty-cell">·</td><td class="diag-cell">—</td><td>2</td></tr>
+                <tr><th>П6</th><td class="empty-cell">·</td><td>8</td><td class="empty-cell">·</td><td class="empty-cell">·</td><td>2</td><td class="diag-cell">—</td></tr>
+              </table>
+            </div>
+            <div class="svg-box" style="margin: 0;" id="m3MatrixGraphSvg"></div>
+          </div>
+
+          <div class="node-inputs-grid" style="margin-top: 14px;">
+            <div class="node-card"><label for="map-P1">П1</label><select id="map-P1"><option value="">?</option><option>А</option><option>Б</option><option>В</option><option>Г</option><option>Д</option><option>Е</option></select></div>
+            <div class="node-card"><label for="map-P2">П2</label><select id="map-P2"><option value="">?</option><option>А</option><option>Б</option><option>В</option><option>Г</option><option>Д</option><option>Е</option></select></div>
+            <div class="node-card"><label for="map-P3">П3</label><select id="map-P3"><option value="">?</option><option>А</option><option>Б</option><option>В</option><option>Г</option><option>Д</option><option>Е</option></select></div>
+            <div class="node-card"><label for="map-P4">П4</label><select id="map-P4"><option value="">?</option><option>А</option><option>Б</option><option>В</option><option>Г</option><option>Д</option><option>Е</option></select></div>
+            <div class="node-card"><label for="map-P5">П5</label><select id="map-P5"><option value="">?</option><option>А</option><option>Б</option><option>В</option><option>Г</option><option>Д</option><option>Е</option></select></div>
+            <div class="node-card"><label for="map-P6">П6</label><select id="map-P6"><option value="">?</option><option>А</option><option>Б</option><option>В</option><option>Г</option><option>Д</option><option>Е</option></select></div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px;">
+            <label for="m3ShortestAns"><strong>Длина кратчайшего пути А → Е:</strong></label>
+            <input type="number" id="m3ShortestAns" class="input-field" style="width: 140px; margin: 0;" placeholder="Число" />
+            <button class="btn btn-sm" onclick="checkM3Matrix()">Проверить решение</button>
+            <button class="btn btn-sm btn-secondary" onclick="toggleM3Hint()">Подсказка</button>
+          </div>
+
+          <div id="m3HintBox" class="callout warn" style="display: none; font-size: 0.9rem;">
+            <strong>Алгоритм дешифровки:</strong><br />
+            1. Единственная вершина степени 1 на схеме — <strong>А</strong>, в таблице это <strong>П4</strong> (связана только с П3). Значит, <strong>П3 = Б</strong>.<br />
+            2. Соседи <strong>Б (П3)</strong> имеют степени 1 (А = П4), 2 (В = П1) и 3 (Г = П2).<br />
+            3. Из оставшихся двух вершин степень 3 у <strong>Д (П5)</strong>, а степень 2 у <strong>Е (П6)</strong>.<br />
+            4. Сравните маршруты из А в Е: <code>А–Б–В–Д–Е = 7 + 4 + 5 + 2 = 18</code> (короче, чем через Г).
+          </div>
+          <div class="feedback" id="m3Feedback"></div>
+        </div>
+
+        <h3>Реализация подсчёта путей на Python (динамическое программирование)</h3>
+        <div class="code-block">graph = {
+    'А': ['Б', 'В', 'Г'],
+    'Б': ['В', 'Д'],
+    'Г': ['В', 'Е'],
+    'В': ['Д', 'Е', 'Ж'],
+    'Д': ['Ж', 'З'],
+    'Е': ['Ж', 'З'],
+    'Ж': ['З'],
+    'З': []
+}
+
+# Мемоизация для подсчёта путей из u в target, проходя через req и избегая ban
+from functools import lru_cache
+
+@lru_cache(None)
+def count_paths(u, target, req, ban, passed=False):
+    if u == ban:
+        return 0
+    if u == req:
+        passed = True
+    if u == target:
+        return 1 if passed else 0
+    return sum(count_paths(v, target, req, ban, passed) for v in graph[u])
+
+print(count_paths('А', 'З', 'В', 'Е'))  # Вывод: 9</div>
+
+        <div class="nav-footer">
+          <button class="btn btn-secondary" onclick="goToStep(2)">← Назад</button>
+          <button class="btn" onclick="goToStep(4)">Перейти к итоговому контролю →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ШАГ 4: ИТОГОВЫЙ КОНТРОЛЬ -->
+    <section class="module" id="step-4">
+      <div class="card">
+        <span class="time-tag">Модуль 4 • Рекомендуемое время: 8 минут</span>
+        <h2>4. Итоговый контроль знаний</h2>
+        <p>Ответь на 8 вопросов по всем разделам урока. После проверки сформируется именная карточка с оценкой и кодом проверки для учителя.</p>
+
+        <div id="finalQuizContainer"></div>
+
+        <button class="btn btn-success" style="width: 100%; margin-top: 10px;" onclick="finishLesson()">Завершить урок и получить оценку</button>
+
+        <div id="certificateSection" style="display: none;">
+          <div class="cert-box">
+            <div style="font-size: 0.88rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); font-weight: 700;">
+              Карточка прохождения урока • Информатика 11 класс
+            </div>
+            <h2 id="certStudentName" style="margin: 8px 0; color: var(--text);">Ученик 11 класса</h2>
+            <p style="margin-bottom: 4px;">Тема: «Решение алгоритмических задач, связанных с анализом графов»</p>
+            <div class="cert-grade" id="certGradeText">Оценка: 5 (Отлично)</div>
+            <p id="certStats" style="font-weight: 600;"></p>
+            <p id="certCode" style="font-family: monospace; font-size: 0.9rem; color: var(--text-muted);"></p>
+            <div class="callout success" style="text-align: left; margin-top: 12px;">
+              Сделай скриншот этой карточки и отправь учителю для выставления оценки в журнал!
+            </div>
+          </div>
+        </div>
+
+        <div class="nav-footer">
+          <button class="btn btn-secondary" onclick="goToStep(3)">← Вернуться к теории</button>
+          <button class="btn btn-secondary btn-sm" onclick="resetAll()">Пройти заново</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // --- СОСТОЯНИЕ ---
+    const state = {
+      currentStep: 0,
+      completedSteps: [false, false, false, false, false],
+      secondsElapsed: 0,
+      studentName: "",
+      dijkstraStep: 0
+    };
+
+    // --- ТАЙМЕР ---
+    setInterval(() => {
+      state.secondsElapsed++;
+      const m = String(Math.floor(state.secondsElapsed / 60)).padStart(2, "0");
+      const s = String(state.secondsElapsed % 60).padStart(2, "0");
+      document.getElementById("timerDisplay").textContent = `Время урока: ${m}:${s} / 45:00`;
+    }, 1000);
+
+    // --- НАВИГАЦИЯ ---
+    function goToStep(idx) {
+      document.querySelectorAll(".module").forEach((el, i) => el.classList.toggle("active", idx === i));
+      document.querySelectorAll(".nav-pill").forEach((pill, i) => {
+        pill.classList.toggle("active", idx === i);
+        pill.classList.toggle("done", state.completedSteps[i]);
+      });
+      state.currentStep = idx;
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function markStepDone(idx) {
+      state.completedSteps[idx] = true;
+      const pills = document.querySelectorAll(".nav-pill");
+      if (pills[idx]) pills[idx].classList.add("done");
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const done = state.completedSteps.filter(Boolean).length;
+      const pct = Math.min(100, Math.round((done / 4) * 100));
+      document.getElementById("progressBar").style.width = `${pct}%`;
+    }
+
+    function startLesson() {
+      const val = document.getElementById("studentNameInput").value.trim();
+      state.studentName = val || "Ученик 11 класса";
+      markStepDone(0);
+      goToStep(1);
+    }
+
+    // --- МОДУЛЬ 1: ПОШАГОВЫЙ ВИЗУАЛИЗАТОР ДЕЙКСТРЫ ---
+    const dijkstraStepsData = [
+      {
+        active: null,
+        visited: [],
+        dist: { S: 0, A: "∞", B: "∞", C: "∞", T: "∞" },
+        relaxed: [],
+        desc: "<strong>Шаг 0 (Инициализация):</strong> Стартовой вершине S присвоена метка 0, остальным — ∞. Все вершины непосещённые."
+      },
+      {
+        active: "S",
+        visited: ["S"],
+        dist: { S: 0, A: 6, B: 2, C: "∞", T: "∞" },
+        relaxed: ["S-A", "S-B"],
+        desc: "<strong>Шаг 1 (Выбираем S, d = 0):</strong> Релаксируем соседей S: d[A] = min(∞, 0+6) = 6; d[B] = min(∞, 0+2) = 2. Вершина S посещена."
+      },
+      {
+        active: "B",
+        visited: ["S", "B"],
+        dist: { S: 0, A: 5, B: 2, C: 7, T: "∞" },
+        relaxed: ["B-A", "B-C"],
+        desc: "<strong>Шаг 2 (Минимальная непосещённая — B, d = 2):</strong> Через B путь в A короче: d[A] = min(6, 2+3) = 5! Также обновляем d[C] = 2+5 = 7."
+      },
+      {
+        active: "A",
+        visited: ["S", "B", "A"],
+        dist: { S: 0, A: 5, B: 2, C: 7, T: 6 },
+        relaxed: ["A-T"],
+        desc: "<strong>Шаг 3 (Минимальная непосещённая — A, d = 5):</strong> Обновляем соседа T: d[T] = min(∞, 5+1) = 6."
+      },
+      {
+        active: "T",
+        visited: ["S", "B", "A", "T"],
+        dist: { S: 0, A: 5, B: 2, C: 7, T: 6 },
+        relaxed: ["T-C"],
+        desc: "<strong>Шаг 4 (Минимальная непосещённая — T, d = 6):</strong> Проверяем соседа C: 6 + 2 = 8 > 7, поэтому метка d[C] = 7 не улучшается."
+      },
+      {
+        active: "C",
+        visited: ["S", "B", "A", "T", "C"],
+        dist: { S: 0, A: 5, B: 2, C: 7, T: 6 },
+        relaxed: [],
+        desc: "<strong>Шаг 5 (Завершение, C, d = 7):</strong> Все вершины посещены! Кратчайший путь от S до T равен 6 (маршрут S → B → A → T)."
+      }
+    ];
+
+    function stepDijkstra(delta) {
+      state.dijkstraStep = Math.max(0, Math.min(dijkstraStepsData.length - 1, state.dijkstraStep + delta));
+      renderDijkstraDemo();
+    }
+
+    function resetDijkstraDemo() {
+      state.dijkstraStep = 0;
+      renderDijkstraDemo();
+    }
+
+    function renderDijkstraDemo() {
+      const st = dijkstraStepsData[state.dijkstraStep];
+      const nodes = {
+        S: { x: 65, y: 110 },
+        A: { x: 245, y: 45 },
+        B: { x: 245, y: 175 },
+        C: { x: 435, y: 175 },
+        T: { x: 435, y: 45 }
+      };
+      const edges = [
+        { id: "S-A", u: "S", v: "A", w: 6 },
+        { id: "S-B", u: "S", v: "B", w: 2 },
+        { id: "B-A", u: "B", v: "A", w: 3 },
+        { id: "A-T", u: "A", v: "T", w: 1 },
+        { id: "B-C", u: "B", v: "C", w: 5 },
+        { id: "T-C", u: "T", v: "C", w: 2 }
+      ];
+
+      let svg = `<svg viewBox="0 0 510 225" style="max-width:510px;">`;
+      edges.forEach(e => {
+        const isRel = st.relaxed.includes(e.id);
+        const stroke = isRel ? "#d97706" : "#94a3b8";
+        const width = isRel ? 3.8 : 2.2;
+        const p1 = nodes[e.u], p2 = nodes[e.v];
+        svg += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${stroke}" stroke-width="${width}" />`;
+        const mx = (p1.x + p2.x) / 2 + (e.u === "B" && e.v === "A" ? -14 : 0);
+        const my = (p1.y + p2.y) / 2;
+        svg += `
+          <rect x="${mx - 11}" y="${my - 10}" width="22" height="18" rx="4" fill="#ffffff" stroke="${stroke}" stroke-width="1.2"/>
+          <text x="${mx}" y="${my + 4}" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">${e.w}</text>
+        `;
+      });
+
+      Object.entries(nodes).forEach(([id, pt]) => {
+        const isAct = st.active === id;
+        const isVis = st.visited.includes(id);
+        let fill = "#ffffff", stroke = "#1d4ed8", textCol = "#0f172a";
+        if (isAct) { fill = "#d97706"; stroke = "#92400e"; textCol = "#ffffff"; }
+        else if (isVis) { fill = "#d1fae5"; stroke = "#059669"; textCol = "#065f46"; }
+
+        svg += `
+          <circle cx="${pt.x}" cy="${pt.y}" r="19" fill="${fill}" stroke="${stroke}" stroke-width="2.8" />
+          <text x="${pt.x}" y="${pt.y + 5}" font-size="14" font-weight="bold" text-anchor="middle" fill="${textCol}">${id}</text>
+          <rect x="${pt.x - 22}" y="${pt.y - 38}" width="44" height="16" rx="4" fill="#0f172a"/>
+          <text x="${pt.x}" y="${pt.y - 26}" font-size="11" font-weight="bold" text-anchor="middle" fill="#38bdf8">d = ${st.dist[id]}</text>
+        `;
+      });
+
+      svg += `</svg>`;
+      document.getElementById("dijkstraDemoSvg").innerHTML = svg;
+      document.getElementById("dijkstraStepDesc").innerHTML = st.desc;
+    }
+    renderDijkstraDemo();
+
+    // Практикум 1 (Дейкстра на 6 вершинах: А, Б, В, Г, Д, Е)
+    function renderM1PracticeSvg() {
+      const nodes = {
+        "А": { x: 60, y: 120 },
+        "Б": { x: 210, y: 45 },
+        "В": { x: 210, y: 195 },
+        "Г": { x: 390, y: 45 },
+        "Д": { x: 390, y: 195 },
+        "Е": { x: 540, y: 120 }
+      };
+      const edges = [
+        ["А", "Б", 4, 0.5],
+        ["А", "В", 2, 0.5],
+        ["Б", "В", 1, 0.5],
+        ["Б", "Г", 5, 0.5],
+        ["В", "Г", 8, 0.34],
+        ["В", "Д", 10, 0.5],
+        ["Г", "Д", 2, 0.5],
+        ["Г", "Е", 6, 0.5],
+        ["Д", "Е", 3, 0.5]
+      ];
+
+      let svg = `<svg viewBox="0 0 600 240" style="max-width:600px;">`;
+      edges.forEach(([u, v, w, t]) => {
+        const p1 = nodes[u], p2 = nodes[v];
+        svg += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="#64748b" stroke-width="2.2" />`;
+        const mx = p1.x + (p2.x - p1.x) * t;
+        const my = p1.y + (p2.y - p1.y) * t;
+        svg += `
+          <rect x="${mx - 12}" y="${my - 10}" width="24" height="19" rx="5" fill="#ffffff" stroke="#1d4ed8" stroke-width="1.3"/>
+          <text x="${mx}" y="${my + 4}" font-size="12" font-weight="bold" text-anchor="middle" fill="#0f172a">${w}</text>
+        `;
+      });
+      Object.entries(nodes).forEach(([id, pt]) => {
+        const isStart = id === "А";
+        svg += `
+          <circle cx="${pt.x}" cy="${pt.y}" r="19" fill="${isStart ? '#1d4ed8' : '#ffffff'}" stroke="#1d4ed8" stroke-width="2.8" />
+          <text x="${pt.x}" y="${pt.y + 5}" font-size="14" font-weight="bold" text-anchor="middle" fill="${isStart ? '#ffffff' : '#0f172a'}">${id}</text>
+        `;
+      });
+      svg += `</svg>`;
+      document.getElementById("m1PracticeSvg").innerHTML = svg;
+    }
+    renderM1PracticeSvg();
+
+    function checkM1Practice() {
+      const expected = { "d1-B": 3, "d1-V": 2, "d1-G": 8, "d1-D": 10, "d1-E": 13 };
+      let ok = 0;
+      Object.entries(expected).forEach(([id, val]) => {
+        const inp = document.getElementById(id);
+        inp.classList.remove("ok", "bad");
+        const raw = inp.value.trim();
+        if (raw !== "" && Number(raw) === val) {
+          inp.classList.add("ok");
+          ok++;
+        } else {
+          inp.classList.add("bad");
+        }
+      });
+
+      const fb = document.getElementById("m1Feedback");
+      if (ok === 5) {
+        fb.style.color = "var(--success)";
+        fb.textContent = "Превосходно! Кратчайший путь А → В → Б → Г → Д → Е длиной 13 и все промежуточные метки найдены верно!";
+        markStepDone(1);
+      } else {
+        fb.style.color = "var(--warning)";
+        fb.textContent = `Верно заполнено вершин: ${ok} из 5. Проверь красные поля (обрати внимание на обходной путь А → В → Б длиной 2 + 1 = 3).`;
+      }
+    }
+
+    // --- МОДУЛЬ 2: DAG (ПРАКТИКУМ ЕГЭ №13) ---
+    function renderM2DagSvg() {
+      const nodes = {
+        "А": { x: 50, y: 130 },
+        "Б": { x: 175, y: 45 },
+        "Г": { x: 175, y: 215 },
+        "В": { x: 300, y: 130 },
+        "Д": { x: 445, y: 45 },
+        "Е": { x: 445, y: 215 },
+        "Ж": { x: 565, y: 130 },
+        "З": { x: 685, y: 130 }
+      };
+      const arcs = [
+        { u: "А", v: "Б", valid: true },
+        { u: "А", v: "В", valid: true },
+        { u: "А", v: "Г", valid: true },
+        { u: "Б", v: "В", valid: true },
+        { u: "Б", v: "Д", valid: false }, // обходит В
+        { u: "Г", v: "В", valid: true },
+        { u: "Г", v: "Е", valid: false }, // ведёт в запрещённую Е и обходит В
+        { u: "В", v: "Д", valid: true },
+        { u: "В", v: "Е", valid: false }, // ведёт в запрещённую Е
+        { u: "В", v: "Ж", valid: true },
+        { u: "Д", v: "Ж", valid: true },
+        { u: "Д", v: "З", valid: true },
+        { u: "Е", v: "Ж", valid: false },
+        { u: "Е", v: "З", valid: false },
+        { u: "Ж", v: "З", valid: true }
+      ];
+
+      let svg = `
+        <svg viewBox="0 0 740 260" style="max-width:740px;">
+          <defs>
+            <marker id="dagOkArr" markerWidth="10" markerHeight="10" refX="25" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#1d4ed8" />
+            </marker>
+            <marker id="dagBadArr" markerWidth="10" markerHeight="10" refX="25" refY="3" orient="auto" markerUnits="strokeWidth">
+              <path d="M0,0 L0,6 L9,3 z" fill="#cbd5e1" />
+            </marker>
+          </defs>
+      `;
+
+      arcs.forEach(a => {
+        const p1 = nodes[a.u], p2 = nodes[a.v];
+        const stroke = a.valid ? "#475569" : "#cbd5e1";
+        const dash = a.valid ? "" : 'stroke-dasharray="5,5"';
+        const marker = a.valid ? 'marker-end="url(#dagOkArr)"' : 'marker-end="url(#dagBadArr)"';
+        svg += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" stroke="${stroke}" stroke-width="2.2" ${dash} ${marker} />`;
+      });
+
+      Object.entries(nodes).forEach(([id, pt]) => {
+        let fill = "#ffffff", stroke = "#1d4ed8", textCol = "#0f172a";
+        if (id === "А" || id === "З") { fill = "#1d4ed8"; textCol = "#ffffff"; }
+        else if (id === "В") { fill = "#ccfbf1"; stroke = "#0f766e"; textCol = "#115e59"; }
+        else if (id === "Е") { fill = "#fee2e2"; stroke = "#dc2626"; textCol = "#991b1b"; }
+
+        svg += `
+          <circle cx="${pt.x}" cy="${pt.y}" r="19" fill="${fill}" stroke="${stroke}" stroke-width="2.8" />
+          <text x="${pt.x}" y="${pt.y + 5}" font-size="14" font-weight="bold" text-anchor="middle" fill="${textCol}">${id}</text>
+        `;
+        if (id === "Е") {
+          svg += `<line x1="${pt.x - 14}" y1="${pt.y - 14}" x2="${pt.x + 14}" y2="${pt.y + 14}" stroke="#dc2626" stroke-width="2.5" />`;
+        }
+      });
+
+      svg += `</svg>`;
+      document.getElementById("m2DagSvg").innerHTML = svg;
+    }
+    renderM2DagSvg();
+
+    function toggleM2Hint() {
+      const el = document.getElementById("m2HintBox");
+      el.style.display = el.style.display === "block" ? "none" : "block";
+    }
+
+    function checkM2Dag() {
+      const expected = { "n2-B": 1, "n2-G": 1, "n2-V": 3, "n2-D": 3, "n2-J": 6, "n2-Z": 9 };
+      let ok = 0;
+      Object.entries(expected).forEach(([id, val]) => {
+        const inp = document.getElementById(id);
+        inp.classList.remove("ok", "bad");
+        const raw = inp.value.trim();
+        if (raw !== "" && Number(raw) === val) {
+          inp.classList.add("ok");
+          ok++;
+        } else {
+          inp.classList.add("bad");
+        }
+      });
+
+      const fb = document.getElementById("m2Feedback");
+      if (ok === 6) {
+        fb.style.color = "var(--success)";
+        fb.textContent = "Верно! Количество путей из А в З через В без захода в Е равно 9.";
+        markStepDone(2);
+      } else {
+        fb.style.color = "var(--warning)";
+        fb.textContent = `Верно заполнено вершин: ${ok} из 6. Проверь выделенные красным поля.`;
+      }
+    }
+
+    // --- МОДУЛЬ 3: ВЕСОВАЯ МАТРИЦА ---
+    function renderM3MatrixGraph() {
+      const nodes = {
+        "А": { x: 45, y: 120 },
+        "Б": { x: 150, y: 120 },
+        "В": { x: 255, y: 45 },
+        "Г": { x: 255, y: 195 },
+        "Д": { x: 375, y: 120 },
+        "Е": { x: 475, y: 195 }
+      };
+      const edges = [
+        ["А", "Б"], ["Б", "В"], ["Б", "Г"], ["В", "Д"], ["Г", "Д"], ["Г", "Е"], ["Д", "Е"]
+      ];
+      let svg = `<svg viewBox="0 0 520 240" style="max-width:520px;">`;
+      edges.forEach(([u, v]) => {
+        svg += `<line x1="${nodes[u].x}" y1="${nodes[u].y}" x2="${nodes[v].x}" y2="${nodes[v].y}" stroke="#1d4ed8" stroke-width="2.5" />`;
+      });
+      Object.entries(nodes).forEach(([id, pt]) => {
+        svg += `
+          <circle cx="${pt.x}" cy="${pt.y}" r="18" fill="#ffffff" stroke="#1d4ed8" stroke-width="2.8" />
+          <text x="${pt.x}" y="${pt.y + 5}" font-size="14" font-weight="bold" text-anchor="middle" fill="#0f172a">${id}</text>
+        `;
+      });
+      svg += `</svg>`;
+      document.getElementById("m3MatrixGraphSvg").innerHTML = svg;
+    }
+    renderM3MatrixGraph();
+
+    function toggleM3Hint() {
+      const el = document.getElementById("m3HintBox");
+      el.style.display = el.style.display === "block" ? "none" : "block";
+    }
+
+    function checkM3Matrix() {
+      const expectedMap = {
+        "map-P1": "В",
+        "map-P2": "Г",
+        "map-P3": "Б",
+        "map-P4": "А",
+        "map-P5": "Д",
+        "map-P6": "Е"
+      };
+      let mapOk = 0;
+      Object.entries(expectedMap).forEach(([id, letter]) => {
+        const sel = document.getElementById(id);
+        sel.classList.remove("ok", "bad");
+        if (sel.value === letter) {
+          sel.classList.add("ok");
+          mapOk++;
+        } else {
+          sel.classList.add("bad");
+        }
+      });
+
+      const ansRaw = document.getElementById("m3ShortestAns").value.trim();
+      const ansOk = ansRaw !== "" && Number(ansRaw) === 18;
+      const fb = document.getElementById("m3Feedback");
+
+      if (mapOk === 6 && ansOk) {
+        fb.style.color = "var(--success)";
+        fb.textContent = "Безупречно! Все пункты дешифрованы верно, а длина кратчайшего пути А → Б → В → Д → Е равна 18!";
+        markStepDone(3);
+      } else {
+        fb.style.color = "var(--warning)";
+        fb.textContent = `Сопоставлено пунктов: ${mapOk} из 6 | Кратчайший путь: ${ansOk ? "верно (18)" : "проверь расчёт"}.`;
+      }
+    }
+
+    // --- МОДУЛЬ 4: ИТОГОВЫЙ ТЕСТ ---
+    const quizData = [
+      {
+        q: "1. При каком условии алгоритм Дейкстры гарантированно находит кратчайшие пути от стартовой вершины до всех остальных вершин графа?",
+        options: [
+          "Если граф является деревом",
+          "Если все веса рёбер (дуг) графа неотрицательны (≥ 0)",
+          "Если все рёбра графа имеют одинаковый вес"
+        ],
+        correct: 1
+      },
+      {
+        q: "2. В чём заключается операция релаксации ребра (u, v) с весом w при поиске кратчайшего пути от старта?",
+        options: [
+          "Если d[u] + w < d[v], то метка d[v] обновляется и становится равной d[u] + w",
+          "Ребро (u, v) удаляется из графа",
+          "К метке d[u] прибавляется количество соседей вершины v"
+        ],
+        correct: 0
+      },
+      {
+        q: "3. В направленном ациклическом графе в вершину К входят дуги из вершин В, Г и Д. Известно, что от старта до В ведут 3 пути, до Г — 5 путей, до Д — 2 пути. Сколько путей ведёт от старта до вершины К?",
+        options: ["10 путей", "15 путей", "30 путей"],
+        correct: 0
+      },
+      {
+        q: "4. Как при подсчёте количества путей в орграфе учесть требование «маршрут должен обязательно проходить через вершину М»?",
+        options: [
+          "Исключить все дуги, позволяющие обойти вершину М стороной (либо перемножить число путей от старта до М и от М до финиша)",
+          "Присвоить вершине М значение 0",
+          "Прибавить к количеству путей в вершину М единицу"
+        ],
+        correct: 0
+      },
+      {
+        q: "5. Какой способ представления графа в программе на Python наиболее эффективен по памяти для разреженного графа (где вершин много, а рёбер мало)?",
+        options: [
+          "Списки смежности (словарь или список соседей для каждой вершины)",
+          "Полная матрица инцидентности",
+          "Трёхмерный массив"
+        ],
+        correct: 0
+      },
+      {
+        q: "6. В весовой матрице неориентированного графа в строке пункта П4 записано три числа: 5, 8 и 12. Чему равна степень вершины П4 на схеме дорог?",
+        options: ["3", "25", "12"],
+        correct: 0
+      },
+      {
+        q: "7. На схеме между пунктами А и Д есть прямая дорога длиной 20 км, а также маршрут А — Б (6 км), Б — В (5 км), В — Д (7 км). Чему равна длина кратчайшего пути из А в Д?",
+        options: ["18 км", "20 км", "38 км"],
+        correct: 0
+      },
+      {
+        q: "8. Почему для подсчёта количества путей методом суммирования входящих дуг граф не должен содержать ориентированных циклов?",
+        options: [
+          "Наличие цикла позволяет проходить по замкнутому контуру неограниченное число раз, делая количество маршрутов бесконечным",
+          "В графе с циклами невозможно определить веса рёбер",
+          "Метод суммирования работает только для неориентированных графов"
+        ],
+        correct: 0
+      }
+    ];
+    const quizAnswers = {};
+
+    function renderQuiz() {
+      const box = document.getElementById("finalQuizContainer");
+      box.innerHTML = "";
+      quizData.forEach((item, qIdx) => {
+        const div = document.createElement("div");
+        div.className = "quiz-q";
+        div.innerHTML = `
+          <div><strong>${item.q}</strong></div>
+          <div id="quiz-opts-${qIdx}">
+            ${item.options.map((opt, oIdx) => `
+              <button class="quiz-opt" onclick="selectQuiz(${qIdx}, ${oIdx}, this)">${opt}</button>
+            `).join("")}
+          </div>
+        `;
+        box.appendChild(div);
+      });
+    }
+
+    function selectQuiz(qIdx, oIdx, btn) {
+      quizAnswers[qIdx] = oIdx;
+      const box = document.getElementById(`quiz-opts-${qIdx}`);
+      box.querySelectorAll(".quiz-opt").forEach(b => b.classList.remove("selected", "correct", "wrong"));
+      btn.classList.add("selected");
+    }
+
+    function finishLesson() {
+      if (Object.keys(quizAnswers).length < quizData.length) {
+        alert("Ответь на все 8 вопросов теста перед завершением урока!");
+        return;
+      }
+
+      let score = 0;
+      quizData.forEach((item, qIdx) => {
+        const chosen = quizAnswers[qIdx];
+        const box = document.getElementById(`quiz-opts-${qIdx}`);
+        box.querySelectorAll(".quiz-opt").forEach((b, oIdx) => {
+          b.classList.remove("selected", "correct", "wrong");
+          if (oIdx === item.correct) b.classList.add("correct");
+          else if (oIdx === chosen && chosen !== item.correct) b.classList.add("wrong");
+        });
+        if (chosen === item.correct) score++;
+      });
+
+      let grade = 2;
+      let label = "Нужно повторить тему";
+      if (score >= 7) { grade = 5; label = "Отлично"; }
+      else if (score >= 5) { grade = 4; label = "Хорошо"; }
+      else if (score >= 4) { grade = 3; label = "Удовлетворительно"; }
+
+      markStepDone(4);
+      const mins = Math.max(1, Math.round(state.secondsElapsed / 60));
+      const d = new Date();
+      const code = `INF11-ALG-GR-${score}${grade}-${d.getDate()}${d.getMonth() + 1}`;
+
+      document.getElementById("certStudentName").textContent = state.studentName || "Ученик 11 класса";
+      document.getElementById("certGradeText").textContent = `Оценка: ${grade} (${label})`;
+      document.getElementById("certStats").textContent = `Правильных ответов: ${score} из ${quizData.length} • Время работы: ~${mins} мин.`;
+      document.getElementById("certCode").textContent = `Код проверки: ${code}`;
+      document.getElementById("certificateSection").style.display = "block";
+      document.getElementById("certificateSection").scrollIntoView({ behavior: "smooth" });
+    }
+
+    function resetAll() {
+      if (confirm("Сбросить прогресс и пройти урок заново?")) {
+        location.reload();
+      }
+    }
+
+    renderQuiz();
+  </script>
+</body>
+</html>
